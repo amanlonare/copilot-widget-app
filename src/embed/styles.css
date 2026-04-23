@@ -1,0 +1,121 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+/* 
+  Reset and Scoping for Shadow DOM 
+  Ensures host page styles do not leak into the widget.
+*/
+:host {
+  all: initial; /* Reset all inherited properties */
+  display: block;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  font-size: 16px;
+  line-height: 1.5;
+  color-scheme: light dark;
+}
+
+/* Re-apply necessary theme variables inside the shadow root */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-sm: calc(var(--radius) * 0.6);
+}
+
+:host {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --radius: 0.625rem;
+}
+
+/* Launch Button (Explicitly Styled for visibility when Tailwind isn't loaded) */
+.launcher-button {
+  background-color: oklch(0.205 0 0); /* primary */
+  border-radius: 9999px;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  border: none;
+  cursor: pointer;
+  color: white;
+}
+
+.launcher-button:hover {
+  transform: scale(1.05);
+}
+
+/* Ensure the icon inside the launcher is visible */
+.launcher-button svg {
+  width: 24px;
+  height: 24px;
+  color: white;
+  stroke-width: 2.5px;
+}
+
+/* Fallback for the Card container */
+.glass-morphism {
+  background-color: white;
+  border: 1px solid oklch(0.922 0 0);
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  border-radius: 1rem;
+}
+
+/* Markdown Prose Styles */
+.markdown-prose p {
+  margin-bottom: 0.5rem;
+}
+
+.markdown-prose p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-prose ul, .markdown-prose ol {
+  margin-left: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdown-prose li {
+  margin-bottom: 0.25rem;
+}
+
+.markdown-prose a {
+  color: oklch(0.205 0 0);
+  text-decoration: underline;
+}
+
+.markdown-prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.85em;
+  background-color: oklch(0.97 0 0);
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+}
