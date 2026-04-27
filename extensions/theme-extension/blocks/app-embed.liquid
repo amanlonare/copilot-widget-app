@@ -1,0 +1,22 @@
+{% assign api_base = block.settings.widget_url | split: "/embed/" | first %}
+<script>
+  window.CopilotWidgetConfig = {
+    apiBaseUrl: "{{ api_base }}"
+  };
+</script>
+<script src="{{ block.settings.widget_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Copilot Widget",
+  "target": "body",
+  "settings": [
+    {
+      "type": "text",
+      "id": "widget_url",
+      "label": "Widget URL",
+      "default": "/embed/widget.global.js"
+    }
+  ]
+}
+{% endschema %}

@@ -87,8 +87,8 @@ export class ApiClient {
               } else if (currentEvent === "error") {
                 throw { message: data.detail, code: "STREAM_ERROR" };
               }
-            } catch (e) {
-              if (e.code === "STREAM_ERROR") throw e;
+            } catch (e: any) {
+              if (e?.code === "STREAM_ERROR") throw e;
               console.warn("Failed to parse SSE chunk:", jsonStr);
             }
           }

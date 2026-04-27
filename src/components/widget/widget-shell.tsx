@@ -14,8 +14,10 @@ export function WidgetShell() {
   });
 
   return (
-    <div className="z-[9999]">
-      <WidgetLauncher isOpen={state.isOpen} onClick={toggleOpen} />
+    <div className="relative h-full w-full pointer-events-none">
+      <div className="pointer-events-auto">
+        <WidgetLauncher isOpen={state.isOpen} onClick={toggleOpen} />
+      </div>
       
       <div
         className={cn(

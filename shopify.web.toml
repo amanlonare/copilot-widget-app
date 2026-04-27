@@ -1,0 +1,10 @@
+# This file tells the Shopify CLI how to manage your Next.js web server
+name = "copilot-widget-web"
+roles = ["frontend", "backend"]
+type = "frontend"
+
+[commands]
+dev = "npm run dev"
+
+[hosting]
+port = 3000

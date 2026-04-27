@@ -5,6 +5,15 @@ All notable changes to the Copilot Widget project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.5] - 2026-04-27
+### Phase 5: Shopify Integration & Production Readiness
+### Added
+- **Shopify Theme App Extension**: Successfully integrated the widget as an App Embed block, allowing merchants to toggle it on/off from the Shopify Theme Editor.
+- **Cross-Origin Security**: Configured CORS headers and Next.js authorized origins to enable cross-domain script loading and API communication between Shopify and the tunnel.
+- **Forced Visibility System**: Implemented a high-priority styling engine with Shadow DOM isolation and maximum z-indexing to ensure visibility across all Shopify themes.
+- **Pointer Event Logic**: Optimized the host container to pass clicks through to the store while maintaining interactivity for widget elements.
+- **Context-Aware Logging**: Added environment detection for Iframe vs. Top window to simplify debugging inside the Shopify Admin.
+
 ## [0.0.4] - 2026-04-22
 ### Phase 4: Streaming & UX Polish
 ### Added

@@ -28,16 +28,20 @@ export function mountWidget(config: CopilotWidgetConfig): void {
   const host = document.createElement("div");
   host.id = ROOT_ID;
   
-  // Style the host container to fill the viewport
-  Object.assign(host.style, {
-    position: "fixed",
-    top: "0",
-    left: "0",
-    width: "100vw",
-    height: "100vh",
-    zIndex: "999999",
-    pointerEvents: "none", // Let clicks pass through until they hit the widget
-  });
+  // Style the host container to fill the viewport and FORCE visibility
+  host.setAttribute('style', `
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 2147483647 !important;
+    pointer-events: none !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: transparent !important;
+  `);
 
   document.body.appendChild(host);
 
@@ -51,7 +55,12 @@ export function mountWidget(config: CopilotWidgetConfig): void {
 
   // 6. Create React mount point
   const mountPoint = document.createElement("div");
-  mountPoint.style.pointerEvents = "auto"; // Re-enable pointer events for the widget
+  mountPoint.id = "copilot-mount-point";
+  Object.assign(mountPoint.style, {
+    position: "absolute",
+    inset: "0",
+    pointerEvents: "none", // Clicks pass through by default
+  });
   shadow.appendChild(mountPoint);
 
   // 7. Mount React
@@ -61,8 +70,6 @@ export function mountWidget(config: CopilotWidgetConfig): void {
       <WidgetShell />
     </React.StrictMode>
   );
-
-  console.log("[CopilotWidget] Widget mounted successfully.");
 }
 
 /**

@@ -13113,18 +13113,19 @@ var CopilotWidget = (() => {
   var BASE_URL = "http://localhost:8000";
   var REQUEST_TIMEOUT = 15e3;
   var ApiClient = class {
-    static async *streamMessage(request) {
-      const controller = new AbortController();
-      const id = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+    static async *streamMessage(request, signal) {
+      const timeoutController = new AbortController();
+      const id = setTimeout(() => timeoutController.abort(), REQUEST_TIMEOUT);
+      const combinedSignal = signal ? signal : timeoutController.signal;
       try {
-        const response = await fetch(`${BASE_URL}/v1/chat`, {
+        const response = await fetch(`${BASE_URL}/v1/chat/stream`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             "Accept": "text/event-stream"
           },
           body: JSON.stringify(request),
-          signal: controller.signal
+          signal: combinedSignal
         });
         clearTimeout(id);
         if (!response.ok) {
@@ -13144,6 +13145,7 @@ var CopilotWidget = (() => {
         }
         const decoder = new TextDecoder();
         let buffer = "";
+        let currentEvent = "";
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
@@ -13152,17 +13154,37 @@ var CopilotWidget = (() => {
           buffer = lines.pop() || "";
           for (const line of lines) {
             const trimmed = line.trim();
-            if (!trimmed || !trimmed.startsWith("data: ")) continue;
-            const jsonStr = trimmed.replace("data: ", "");
-            if (jsonStr === "[DONE]") {
-              yield { answer: "", done: true };
-              return;
+            if (!trimmed) {
+              currentEvent = "";
+              continue;
             }
-            try {
-              const chunk = JSON.parse(jsonStr);
-              yield chunk;
-            } catch (e) {
-              console.warn("Failed to parse SSE chunk:", jsonStr);
+            if (trimmed.startsWith("event: ")) {
+              currentEvent = trimmed.replace("event: ", "");
+              continue;
+            }
+            if (trimmed.startsWith("data: ")) {
+              const jsonStr = trimmed.replace("data: ", "");
+              if (jsonStr === "[DONE]") {
+                yield { answer: "", done: true };
+                return;
+              }
+              try {
+                const data = JSON.parse(jsonStr);
+                if (currentEvent === "content") {
+                  yield { answer: data.chunk, done: false };
+                } else if (currentEvent === "metadata") {
+                  yield {
+                    answer: "",
+                    session_id: data.session_id,
+                    done: true
+                  };
+                } else if (currentEvent === "error") {
+                  throw { message: data.detail, code: "STREAM_ERROR" };
+                }
+              } catch (e) {
+                if (e?.code === "STREAM_ERROR") throw e;
+                console.warn("Failed to parse SSE chunk:", jsonStr);
+              }
             }
           }
         }
@@ -13272,12 +13294,24 @@ var CopilotWidget = (() => {
       isStreaming: false
     });
     const sessionIdRef = (0, import_react.useRef)(void 0);
+    const abortControllerRef = (0, import_react.useRef)(null);
+    (0, import_react.useEffect)(() => {
+      return () => {
+        if (abortControllerRef.current) {
+          abortControllerRef.current.abort();
+        }
+      };
+    }, []);
     const toggleOpen = (0, import_react.useCallback)(() => {
       setState((prev) => ({ ...prev, isOpen: !prev.isOpen }));
     }, []);
     const sendMessage = (0, import_react.useCallback)(async (content3) => {
       const trimmed = content3.trim();
       if (!trimmed || state.isSubmitting || state.isStreaming) return;
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+      abortControllerRef.current = new AbortController();
       const userMessage = {
         id: v4_default(),
         role: "user",
@@ -13302,6 +13336,7 @@ var CopilotWidget = (() => {
         if (options.useMock) {
           const stream = MockChatService.streamAssistantReply(trimmed);
           for await (const chunk of stream) {
+            if (abortControllerRef.current?.signal.aborted) break;
             setState((prev) => {
               if (prev.isSubmitting) {
                 return { ...prev, isSubmitting: false, isStreaming: true };
@@ -13323,7 +13358,7 @@ var CopilotWidget = (() => {
           const stream = ApiClient.streamMessage({
             query: trimmed,
             session_id: sessionIdRef.current
-          });
+          }, abortControllerRef.current.signal);
           for await (const chunk of stream) {
             setState((prev) => {
               if (prev.isSubmitting) {
@@ -13345,7 +13380,9 @@ var CopilotWidget = (() => {
           }
         }
         setState((prev) => ({ ...prev, isSubmitting: false, isStreaming: false }));
+        abortControllerRef.current = null;
       } catch (error) {
+        if (error.name === "AbortError") return;
         console.error("Streaming failed:", error);
         setState((prev) => ({
           ...prev,
@@ -13356,7 +13393,7 @@ var CopilotWidget = (() => {
           isStreaming: false
         }));
       }
-    }, [state.isSubmitting, state.isStreaming, options.useMock, state.isOpen]);
+    }, [state.isSubmitting, state.isStreaming, options.useMock]);
     return {
       state,
       toggleOpen,
@@ -29115,7 +29152,7 @@ var CopilotWidget = (() => {
   // src/components/widget/message-list.tsx
   var import_jsx_runtime14 = __toESM(require_jsx_runtime());
   function MessageList({ messages }) {
-    const scrollRef = useAutoScroll(messages.length);
+    const scrollRef = useAutoScroll(messages);
     return /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(ScrollArea, { className: "flex-1 h-full", children: /* @__PURE__ */ (0, import_jsx_runtime14.jsxs)("div", { className: "flex flex-col gap-4 px-4 py-4", children: [
       messages.map((msg) => /* @__PURE__ */ (0, import_jsx_runtime14.jsx)(MessageBubble, { message: msg }, msg.id)),
       messages.length === 0 && /* @__PURE__ */ (0, import_jsx_runtime14.jsx)("div", { className: "flex h-32 items-center justify-center text-sm text-muted-foreground", children: "No messages yet. Say hello!" }),
@@ -30602,10 +30639,10 @@ var CopilotWidget = (() => {
   var import_jsx_runtime23 = __toESM(require_jsx_runtime());
   function WidgetShell() {
     const { state, toggleOpen, sendMessage } = useWidgetState({
-      useMock: window.CopilotWidgetConfig?.useMock
+      useMock: typeof window !== "undefined" ? window.CopilotWidgetConfig?.useMock : false
     });
-    return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "z-[9999]", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(WidgetLauncher, { isOpen: state.isOpen, onClick: toggleOpen }),
+    return /* @__PURE__ */ (0, import_jsx_runtime23.jsxs)("div", { className: "relative h-full w-full pointer-events-none", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime23.jsx)("div", { className: "pointer-events-auto", children: /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(WidgetLauncher, { isOpen: state.isOpen, onClick: toggleOpen }) }),
       /* @__PURE__ */ (0, import_jsx_runtime23.jsx)(
         "div",
         {
@@ -30625,7 +30662,7 @@ var CopilotWidget = (() => {
   }
 
   // src/embed/version.ts
-  var WIDGET_VERSION = true ? "0.1.0" : "0.0.0";
+  var WIDGET_VERSION = true ? "0.0.4" : "0.0.0";
   function injectVersionMeta() {
     if (typeof document === "undefined") return;
     if (document.querySelector('meta[name="copilot-widget-version"]')) {
@@ -30654,29 +30691,37 @@ var CopilotWidget = (() => {
     injectVersionMeta();
     const host = document.createElement("div");
     host.id = ROOT_ID;
-    Object.assign(host.style, {
-      position: "fixed",
-      top: "0",
-      left: "0",
-      width: "100vw",
-      height: "100vh",
-      zIndex: "999999",
-      pointerEvents: "none"
-      // Let clicks pass through until they hit the widget
-    });
+    host.setAttribute("style", `
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 2147483647 !important;
+    pointer-events: none !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    background: transparent !important;
+  `);
     document.body.appendChild(host);
     const shadow = host.attachShadow({ mode: "open" });
     const styleTag = document.createElement("style");
     styleTag.textContent = styles_default;
     shadow.appendChild(styleTag);
     const mountPoint = document.createElement("div");
-    mountPoint.style.pointerEvents = "auto";
+    mountPoint.id = "copilot-mount-point";
+    Object.assign(mountPoint.style, {
+      position: "absolute",
+      inset: "0",
+      pointerEvents: "none"
+      // Clicks pass through by default
+    });
     shadow.appendChild(mountPoint);
     const root3 = (0, import_client.createRoot)(mountPoint);
     root3.render(
       /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(import_react9.default.StrictMode, { children: /* @__PURE__ */ (0, import_jsx_runtime24.jsx)(WidgetShell, {}) })
     );
-    console.log("[CopilotWidget] Widget mounted successfully.");
   }
   function unmountWidget() {
     const host = document.getElementById(ROOT_ID);
