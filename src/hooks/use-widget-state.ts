@@ -97,9 +97,17 @@ export function useWidgetState(options: UseWidgetStateOptions = {}) {
           if (chunk.done) break;
         }
       } else {
+        // Collect context from previous actions to help LLM resolve variant IDs (Stateless Context)
+        const recentActions = state.messages
+          .flatMap(m => m.actions || [])
+          .slice(-10); // Last 10 actions for context
+
         const stream = ApiClient.streamMessage({
           query: trimmed,
           session_id: sessionIdRef.current,
+          context: {
+            recent_actions: recentActions
+          }
         }, abortControllerRef.current.signal);
 
         for await (const chunk of stream) {
@@ -119,6 +127,17 @@ export function useWidgetState(options: UseWidgetStateOptions = {}) {
               ...prev,
               messages: prev.messages.map(m => 
                 m.id === assistantPlaceholderId ? { ...m, content: accumulatedAnswer } : m
+              ),
+            }));
+          }
+
+          if (chunk.action) {
+            setState((prev) => ({
+              ...prev,
+              messages: prev.messages.map(m => 
+                m.id === assistantPlaceholderId 
+                  ? { ...m, actions: [...(m.actions || []), chunk.action] } 
+                  : m
               ),
             }));
           }

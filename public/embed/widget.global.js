@@ -13110,7 +13110,12 @@ var CopilotWidget = (() => {
   var import_react = __toESM(require_react());
 
   // src/services/api-client.ts
-  var BASE_URL = "http://localhost:8000";
+  var getBaseUrl = () => {
+    if (typeof window !== "undefined" && window.CopilotWidgetConfig?.apiBaseUrl) {
+      return window.CopilotWidgetConfig.apiBaseUrl;
+    }
+    return "http://localhost:8000";
+  };
   var REQUEST_TIMEOUT = 15e3;
   var ApiClient = class {
     static async *streamMessage(request, signal) {
@@ -13118,7 +13123,7 @@ var CopilotWidget = (() => {
       const id = setTimeout(() => timeoutController.abort(), REQUEST_TIMEOUT);
       const combinedSignal = signal ? signal : timeoutController.signal;
       try {
-        const response = await fetch(`${BASE_URL}/v1/chat/stream`, {
+        const response = await fetch(`${getBaseUrl()}/v1/chat/stream`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -30662,7 +30667,7 @@ var CopilotWidget = (() => {
   }
 
   // src/embed/version.ts
-  var WIDGET_VERSION = true ? "0.0.4" : "0.0.0";
+  var WIDGET_VERSION = true ? "0.0.5" : "0.0.0";
   function injectVersionMeta() {
     if (typeof document === "undefined") return;
     if (document.querySelector('meta[name="copilot-widget-version"]')) {

@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { ChatMessage } from "@/types/chat";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import ReactMarkdown from "react-markdown";
+import { ActionWidget } from "./action-widget";
 
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -48,6 +49,10 @@ export function MessageBubble({ message }: MessageBubbleProps) {
             {message.content}
           </ReactMarkdown>
         </div>
+        
+        {isAssistant && message.actions?.map((action, idx) => (
+          <ActionWidget key={`${message.id}-action-${idx}`} action={action} />
+        ))}
       </div>
       {!isAssistant && (
         <Avatar className="h-8 w-8 shrink-0">

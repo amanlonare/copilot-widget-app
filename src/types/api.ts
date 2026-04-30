@@ -5,11 +5,16 @@ export interface CitationModel {
   score?: number;
 }
 
+import { CommerceAction } from "./chat";
+
 export interface ChatRequest {
   query: string;
   user_id?: string;
   session_id?: string;
   metadata?: Record<string, any>;
+  context?: {
+    recent_actions?: CommerceAction[];
+  };
 }
 
 export interface ChatResponse {
@@ -28,6 +33,7 @@ export interface ApiError {
 
 export interface StreamChunk {
   answer: string;
+  action?: CommerceAction;
   session_id?: string;
   done?: boolean;
 }

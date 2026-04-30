@@ -1,6 +1,12 @@
 import { ChatRequest, ChatResponse, ApiError, StreamChunk } from "@/types/api";
 
-const BASE_URL = process.env.NEXT_PUBLIC_ORCHESTRATOR_URL || "http://localhost:8000";
+const getBaseUrl = () => {
+  if (typeof window !== "undefined" && (window as any).CopilotWidgetConfig?.apiBaseUrl) {
+    return (window as any).CopilotWidgetConfig.apiBaseUrl;
+  }
+  return process.env.NEXT_PUBLIC_ORCHESTRATOR_URL || "http://localhost:8000";
+};
+
 const REQUEST_TIMEOUT = 15000; // 15 seconds
 
 export class ApiClient {
@@ -12,7 +18,7 @@ export class ApiClient {
     const combinedSignal = signal ? signal : timeoutController.signal;
 
     try {
-      const response = await fetch(`${BASE_URL}/v1/chat/stream`, {
+      const response = await fetch(`${getBaseUrl()}/v1/chat/stream`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -78,6 +84,8 @@ export class ApiClient {
               
               if (currentEvent === "content") {
                 yield { answer: data.chunk, done: false };
+              } else if (currentEvent === "action") {
+                yield { answer: "", action: data, done: false };
               } else if (currentEvent === "metadata") {
                 yield { 
                   answer: "", 

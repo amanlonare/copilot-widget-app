@@ -36,6 +36,7 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
         placeholder="Type a message..."
         disabled={disabled}
         className="flex-1 focus-visible:ring-primary"
+        style={{ color: '#0f172a', backgroundColor: '#ffffff' }}
       />
       <Button
         size="icon"
