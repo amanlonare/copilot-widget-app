@@ -16,6 +16,12 @@ export function useWidgetState(options: UseWidgetStateOptions = {}) {
     messages: [],
     isSubmitting: false,
     isStreaming: false,
+    config: {
+      botName: "Copilot",
+      primaryColor: "#000000",
+      welcomeMessage: "Hi! How can I help you today?",
+      shopDomain: "dev-copilot-store.myshopify.com",
+    },
   });
   
   // Persist session ID and AbortController throughout component lifecycle
@@ -29,6 +35,44 @@ export function useWidgetState(options: UseWidgetStateOptions = {}) {
         abortControllerRef.current.abort();
       }
     };
+  }, []);
+
+  // Fetch settings on load
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const shop = state.config.shopDomain;
+        
+        // Determine base URL from Shopify Liquid configuration
+        const rawBaseUrl = typeof window !== 'undefined' && (window as any).CopilotWidgetConfig?.apiBaseUrl 
+          ? (window as any).CopilotWidgetConfig.apiBaseUrl 
+          : '';
+        
+        // Clean the base URL
+        const baseUrl = rawBaseUrl.endsWith('/') ? rawBaseUrl.slice(0, -1) : rawBaseUrl;
+        const url = `${baseUrl}/api/widget/settings?shop=${shop}&t=${Date.now()}`;
+        
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          // Only update if we actually got valid configuration back
+          if (data && (data.bot_name || data.primary_color)) {
+            setState((prev) => ({
+              ...prev,
+              config: {
+                ...prev.config,
+                botName: data.bot_name || prev.config.botName,
+                primaryColor: data.primary_color || prev.config.primaryColor,
+                welcomeMessage: data.welcome_message || prev.config.welcomeMessage,
+              },
+            }));
+          }
+        }
+      } catch (err) {
+        // Silent fail in production to maintain UX
+      }
+    };
+    fetchSettings();
   }, []);
 
   const toggleOpen = useCallback(() => {

@@ -5,6 +5,15 @@ All notable changes to the Copilot Widget project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.0.7] - 2026-04-30
+### Phase 7: Merchant Configuration Surface
+### Added
+- **Dynamic Configuration Engine**: Implemented a Supabase-backed settings system allowing merchants to customize Bot Name, Primary Color, and Welcome Message.
+- **Merchant Admin Dashboard**: Created a protected `/admin/settings` route for merchants to manage their widget identity.
+- **Cross-Domain Configuration Bridge**: Engineered a dynamic fetch system that synchronizes merchant settings between the Shopify storefront and the app backend via `apiBaseUrl`.
+- **Supabase Integration**: Integrated `@supabase/supabase-js` with Row Level Security (RLS) for secure persistence of merchant settings.
+- **Cache-Busting Delivery**: Added URL timestamping to the settings API to ensure real-time updates across browsers and CDNs.
+
 ## [0.0.6] - 2026-04-30
 ### Phase 6: Commerce Actions & Shopify Admin Integration
 ### Added

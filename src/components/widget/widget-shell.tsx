@@ -16,7 +16,11 @@ export function WidgetShell() {
   return (
     <div className="relative h-full w-full pointer-events-none">
       <div className="pointer-events-auto">
-        <WidgetLauncher isOpen={state.isOpen} onClick={toggleOpen} />
+        <WidgetLauncher 
+          isOpen={state.isOpen} 
+          onClick={toggleOpen} 
+          primaryColor={state.config.primaryColor}
+        />
       </div>
       
       <div
@@ -28,10 +32,10 @@ export function WidgetShell() {
         )}
       >
         <Card className="flex h-[600px] flex-col overflow-hidden shadow-2xl border-primary/20 glass-morphism">
-          <WidgetHeader name="Copilot" onClose={toggleOpen} />
+          <WidgetHeader name={state.config.botName} onClose={toggleOpen} primaryColor={state.config.primaryColor} />
           
           <div className="flex-1 min-h-0">
-            <MessageList messages={state.messages} />
+            <MessageList messages={state.messages} welcomeMessage={state.config.welcomeMessage} />
           </div>
           
           {(state.isSubmitting || state.isStreaming) && (

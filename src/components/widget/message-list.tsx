@@ -7,9 +7,10 @@ import { MessageBubble } from "./message-bubble";
 
 interface MessageListProps {
   messages: ChatMessage[];
+  welcomeMessage?: string;
 }
 
-export function MessageList({ messages }: MessageListProps) {
+export function MessageList({ messages, welcomeMessage }: MessageListProps) {
   const scrollRef = useAutoScroll(messages);
 
   return (
@@ -19,8 +20,8 @@ export function MessageList({ messages }: MessageListProps) {
           <MessageBubble key={msg.id} message={msg} />
         ))}
         {messages.length === 0 && (
-          <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-            No messages yet. Say hello!
+          <div className="flex h-32 items-center justify-center text-sm text-muted-foreground text-center px-8">
+            {welcomeMessage || "Hi! How can I help you today?"}
           </div>
         )}
         <div ref={scrollRef} className="h-0" aria-hidden="true" />

@@ -15,9 +15,17 @@ export interface ChatMessage {
   createdAt: Date;
 }
 
+export interface WidgetConfig {
+  botName: string;
+  primaryColor: string;
+  welcomeMessage: string;
+  shopDomain: string;
+}
+
 export interface WidgetState {
   isOpen: boolean;
   messages: ChatMessage[];
   isSubmitting: boolean;
   isStreaming: boolean;
+  config: WidgetConfig;
 }
