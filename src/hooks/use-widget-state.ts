@@ -136,7 +136,7 @@ export function useWidgetState(options: UseWidgetStateOptions = {}) {
               ...prev,
               messages: prev.messages.map(m => 
                 m.id === assistantPlaceholderId 
-                  ? { ...m, actions: [...(m.actions || []), chunk.action] } 
+                  ? { ...m, actions: [...(m.actions || []), chunk.action!] } 
                   : m
               ),
             }));

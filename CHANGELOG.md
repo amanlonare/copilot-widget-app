@@ -5,6 +5,14 @@ All notable changes to the Copilot Widget project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0] - 2026-04-30
+### Phase 6: Commerce Actions & Shopify Admin Integration
+### Added
+- **Product Discovery Widgets**: Implemented a rich horizontal `ProductCarousel` for showcasing shopify items directly in chat.
+- **Cart Confirmation System**: Built a dedicated `CartConfirmation` UI for verifying items before checkout.
+- **Shopify Admin API Integration**: Wired the frontend to handle live product search results from the Orchestrator's new Shopify Provider.
+- **Forced Theme Compatibility**: Optimized `ChatInput` with high-contrast inline styles to guarantee visibility across all Shopify store themes (Fix for white-on-white text).
+
 ## [0.0.5] - 2026-04-27
 ### Phase 5: Shopify Integration & Production Readiness
 ### Added
