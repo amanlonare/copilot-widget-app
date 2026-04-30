@@ -5,7 +5,7 @@ All notable changes to the Copilot Widget project will be documented in this fil
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2026-04-30
+## [0.0.6] - 2026-04-30
 ### Phase 6: Commerce Actions & Shopify Admin Integration
 ### Added
 - **Product Discovery Widgets**: Implemented a rich horizontal `ProductCarousel` for showcasing shopify items directly in chat.
